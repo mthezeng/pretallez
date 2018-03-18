@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8"/>
   <script src="rightofway.js"></script>
 </head>
 <body>
   <script>
-  document.body.onload = setup
+  document.body.onload = function(){
+    document.getElementById("result").style.visibility = "hidden";
+    document.getElementById("result").innerHTML = "<strong>Referee calls: </strong>";
+    initial();
+  }
   </script>
-  <h1>Pret Allez</h1>
-
-  <p id="userPrompt"></p>
-  <div id="initialButtons"></div>
-  <div id="attackButtons"></div>
-  <p id="result"></p>
+  <div align="center">
+    <h1>Prêt Allez</h1>
+    <p id="userPrompt"></p>
+    <div id="buttons"></div>
+    <p id="result"></p>
+  </div>
 
 </body>
 </html>

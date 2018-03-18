@@ -1,66 +1,146 @@
-function setup() {
-  document.getElementById("userPrompt").innerHTML = "What was the first action?";
-  document.getElementById("result").style.visibility = "hidden";
-  document.getElementById("result").innerHTML = "<strong>Referee calls: </strong>";
-
+function initial() {
+  document.getElementById("userPrompt").innerHTML = "What was the action?";
   const actions = {"attackleft": "Attack left", "attackright": "Attack right",
                     "polleft": "Point-in-line left", "polright": "Point-in-line right",
                      "simul": "Simultaneous attacks", "ycleft": "Yellow card left",
                      "ycright": "Yellow card right", "rcleft": "Red card left",
                      "rcright": "Red card right"};
-  let x = document.getElementById("initialButtons");
-  for (let i of Object.keys(actions)) {
-    let button = document.createElement("input");
-    button.type = "button";
-    button.class = "firstaction";
-    button.id = i;
-    button.value = actions[i];
-    button.addEventListener("click", initialUpdate);
-    x.appendChild(button);
-  }
+  createButtons(actions, initialUpdate);
 }
 
 function initialUpdate(event) {
-  document.getElementById("initialButtons").style.visibility = "hidden";
   // document.getElementById("result").style.visibility = "visible";
-  document.getElementById("result").innerHTML += event.target.value + " ";
-  switch (event.target.id) {
-    case "attackleft" || "attackright":
-      attackResult("attack")
-      break;
-    case "polleft" || "polright":
+  if (event.target.id === "attackleft" || event.target.id === "attackright") {
+      document.getElementById("result").innerHTML += event.target.value + " ";
+      attackResult("attack");
+  } else if (event.target.id ===  "polleft" || event.target.id === "polright") {
+      document.getElementById("result").innerHTML += event.target.value + " ";
       polResult();
-      break;
-    case "simul" || "ycright" || "ycleft":
+  } else if (event.target.id === "simul" || event.target.id ===  "ycright" || event.target.id === "ycleft") {
+      document.getElementById("result").innerHTML += event.target.value + ", "
       noTouch();
-      break;
-    case "rcleft" || "rcright":
+  } else if (event.target.id === "rcleft" || event.target.id ===  "rcright") {
+      document.getElementById("result").innerHTML += event.target.value + ", "
       awardTouch();
-      break;
-    default:
-      console.log("Error: check switch statement in initialUpdate")
+  } else {
+      console.log("Error: check control statements in initialUpdate")
   }
 }
 
 function attackResult(attack_type) {
+  document.getElementById("userPrompt").innerHTML = "What was the result of the " + attack_type + "?"
   let b = document.getElementById("attackButtons");
-  const actions = {"arrives": "arrives, ", "offtarget": "is off target, ",
-                  "misses": "is no, ", "parrynoriposte": "is parried, no riposte. ",
-                  "parryriposte": "is parried, riposte "};
-  for (let i of Object.keys(actions)) {
-    let button = document.createElement("input");
-    button.type = "button";
-    button.class = "attackresult";
-    button.id = i;
-    button.value = actions[i];
-    button.addEventListener("click", attackUpdate);
-    b.appendChild(button);
-  }
+  const actions = {"arrives": attack_type + " arrives", "offtarget": attack_type + " off target",
+                  "misses": attack_type + " misses", "parrynoriposte": attack_type + " is parried, no riposte",
+                  "parryriposte": attack_type + " is parried, riposte"};
+  createButtons(actions, attackUpdate)
 }
 
 function attackUpdate(event) {
-  document.getElementById("attackButtons").style.visibility = "hidden";
-  document.getElementById("result").innerHTML += event.target.value;
   // document.getElementById("result").style.visibility = "visible";
+  if (event.target.id === "arrives") {
+    document.getElementById("result").innerHTML += "arrives, ";
+    awardTouch();
+  } else if (event.target.id === "offtarget") {
+    document.getElementById("result").innerHTML += "is off target, ";
+    noTouch();
+  } else if (event.target.id === "misses") {
+    document.getElementById("result").innerHTML += "is no, ";
+    defenderResponse();
+  } else if (event.target.id === "parrynoriposte") {
+    document.getElementById("result").innerHTML += "is parried, no riposte. ";
+    attackContinuation();
+  } else if (event.target.id === "parryriposte") {
+    document.getElementById("result").innerHTML += "is parried, riposte ";
+    attackResult("riposte");
+  } else {
+      console.log("Error: check control statements in initialUpdate")
+  }
+}
 
+function defenderResponse() {
+  document.getElementById("userPrompt").innerHTML = "Did the defender respond with a counterattack?"
+  const response = {"y": "Yes", "n": "No"};
+  createButtons(response, defenderUpdate);
+}
+
+function defenderUpdate(event) {
+  if (event.target.id === "y") {
+    document.getElementById("result").innerHTML += "counterattack ";
+    attackResult("counterattack");
+  } else if (event.target.id === "n") {
+    attackContinuation();
+  }
+}
+
+function attackContinuation() {
+  document.getElementById("userPrompt").innerHTML = "Did the attacker continue their attack?";
+  const actions = {"remise": "Yes, remise", "redoublement": "Yes, redoublement", "no": "No"};
+  createButtons(actions, continuationUpdate);
+}
+
+function continuationUpdate(event) {
+  if (event.target.id === "remise") {
+    document.getElementById("result").innerHTML += "remise ";
+    attackResult("remise");
+  } else if (event.target.id === "redoublement") {
+    document.getElementById("result").innerHTML += "redoublement ";
+    attackResult("redoublement");
+  } else if (event.target.id === "no") {
+    document.getElementById("result").innerHTML += "action resets. ";
+    initial();
+  }
+}
+
+function polResult() {
+  document.getElementById("userPrompt").innerHTML = "What was the result of the point-in-line?";
+  const actions = {"arrives, ": "Point-in-line arrives",
+                    "is broken. ": "Point-in-line broken",
+                    "is no. ": "Point-in-line misses",
+                    "is beaten. ": "Opponent beats the blade"};
+  createButtons(actions, polUpdate);
+}
+
+function polUpdate(event) {
+  document.getElementById("result").innerHTML += event.target.id;
+  if (event.target.id === "arrives, ") {
+    awardTouch();
+  } else {
+    initial();
+  }
+}
+
+function awardTouch() {
+  document.getElementById("result").innerHTML += "touch.";
+  showResult();
+}
+
+function noTouch() {
+  document.getElementById("result").innerHTML += "no touch.";
+  showResult();
+}
+
+function showResult() {
+  document.getElementById("userPrompt").style.visibility = "hidden";
+  document.getElementById("buttons").style.visibility = "hidden";
+  document.getElementById("result").style.visibility = "visible";
+}
+
+function createButtons(actions, resultFunc) {
+  const element = document.getElementById("buttons");
+
+  // remove all previous buttons
+  while(element.hasChildNodes()) {
+      element.removeChild(element.lastChild);
+  }
+
+  // add new buttons
+  for (let i of Object.keys(actions)) {
+    let button = document.createElement("input");
+    button.type = "button";
+    button.id = i;
+    button.value = actions[i];
+    button.addEventListener("click", resultFunc);
+    element.appendChild(button);
+  }
 }
