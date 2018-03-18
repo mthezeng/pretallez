@@ -1,3 +1,11 @@
+function reset() {
+  document.getElementById("userPrompt").style.visibility = "visible";
+  document.getElementById("buttons").style.visibility = "visible";
+  document.getElementById("result").style.visibility = "hidden";
+  document.getElementById("result").innerHTML = "<strong>Referee calls: </strong>";
+  initial();
+}
+
 function initial() {
   document.getElementById("userPrompt").innerHTML = "What was the action?";
   const actions = {"attackleft": "Attack left", "attackright": "Attack right",
@@ -124,6 +132,7 @@ function showResult() {
   document.getElementById("userPrompt").style.visibility = "hidden";
   document.getElementById("buttons").style.visibility = "hidden";
   document.getElementById("result").style.visibility = "visible";
+  //createResetButtion();
 }
 
 function createButtons(actions, resultFunc) {
@@ -143,4 +152,14 @@ function createButtons(actions, resultFunc) {
     button.addEventListener("click", resultFunc);
     element.appendChild(button);
   }
+}
+
+function createResetButtion() {
+  let resetElement = document.getElementById("resetbutton");
+  let resetButton = document.createElement("input");
+  resetButton.type = "button";
+  resetButton.id = "reset";
+  resetButton.value = "Reset"
+  resetButton.addEventListener("click", reset);
+  resetElement.appendChild(resetButton)
 }

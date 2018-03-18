@@ -7,9 +7,8 @@
 <body>
   <script>
   document.body.onload = function(){
-    document.getElementById("result").style.visibility = "hidden";
-    document.getElementById("result").innerHTML = "<strong>Referee calls: </strong>";
-    initial();
+    createResetButtion();
+    reset();
   }
   </script>
   <div align="center">
@@ -17,6 +16,7 @@
     <p id="userPrompt"></p>
     <div id="buttons"></div>
     <p id="result"></p>
+    <div id="resetbutton"></div>
   </div>
 
 </body>
