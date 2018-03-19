@@ -1,8 +1,10 @@
 function reset() {
   document.getElementById("userPrompt").style.visibility = "visible";
   document.getElementById("buttons").style.visibility = "visible";
+  document.getElementById("priority").style.visibility = "visible"
   document.getElementById("result").style.visibility = "hidden";
-  document.getElementById("result").innerHTML = "<strong>Referee calls: </strong>";
+  document.getElementById("result").innerHTML = "<strong>Referee calls:</strong> ";
+  updatePriority("none");
   initial();
 }
 
@@ -17,18 +19,28 @@ function initial() {
 }
 
 function initialUpdate(event) {
-  // document.getElementById("result").style.visibility = "visible";
-  if (event.target.id === "attackleft" || event.target.id === "attackright") {
-      document.getElementById("result").innerHTML += event.target.value + " ";
+  document.getElementById("result").style.visibility = "visible";
+  if (event.target.id === "attackleft") {
+      updateResult(event.target.value + " ");
+      updatePriority("left");
       attackResult("attack");
-  } else if (event.target.id ===  "polleft" || event.target.id === "polright") {
-      document.getElementById("result").innerHTML += event.target.value + " ";
+  } else if (event.target.id === "attackright") {
+      updateResult(event.target.value + " ");
+      updatePriority("right");
+      attackResult("attack");
+  } else if (event.target.id ===  "polleft") {
+      updateResult(event.target.value + " ");
+      updatePriority("left");
+      polResult();
+  } else if (event.target.id === "polright") {
+      updateResult(event.target.value + " ");
+      updatePriority("right");
       polResult();
   } else if (event.target.id === "simul" || event.target.id ===  "ycright" || event.target.id === "ycleft") {
-      document.getElementById("result").innerHTML += event.target.value + ", "
+      updateResult(event.target.value + ", ");
       noTouch();
   } else if (event.target.id === "rcleft" || event.target.id ===  "rcright") {
-      document.getElementById("result").innerHTML += event.target.value + ", "
+      updateResult(event.target.value + ", ");
       awardTouch();
   } else {
       console.log("Error: check control statements in initialUpdate")
@@ -38,28 +50,44 @@ function initialUpdate(event) {
 function attackResult(attack_type) {
   document.getElementById("userPrompt").innerHTML = "What was the result of the " + attack_type + "?"
   let b = document.getElementById("attackButtons");
-  const actions = {"arrives": attack_type + " arrives", "offtarget": attack_type + " off target",
-                  "misses": attack_type + " misses", "parrynoriposte": attack_type + " is parried, no riposte",
-                  "parryriposte": attack_type + " is parried, riposte"};
+  let actions
+  if (attack_type === "riposte") {
+    actions = {"arrives": attack_type + " arrives", "offtarget": attack_type + " off target",
+                    "misses": attack_type + " misses", "nocounterriposte": attack_type + " is counterparried, no counterriposte",
+                    "counterriposte": attack_type + " is counterparried, counterriposte"};
+  } else {
+    actions = {"arrives": attack_type + " arrives", "offtarget": attack_type + " off target",
+                    "misses": attack_type + " misses", "parrynoriposte": attack_type + " is parried, no riposte",
+                    "parryriposte": attack_type + " is parried, riposte"};
+  }
   createButtons(actions, attackUpdate)
 }
 
 function attackUpdate(event) {
   // document.getElementById("result").style.visibility = "visible";
   if (event.target.id === "arrives") {
-    document.getElementById("result").innerHTML += "arrives, ";
+    updateResult("arrives, ");
     awardTouch();
   } else if (event.target.id === "offtarget") {
-    document.getElementById("result").innerHTML += "is off target, ";
+    updateResult("is off target, ");
     noTouch();
   } else if (event.target.id === "misses") {
-    document.getElementById("result").innerHTML += "is no, ";
+    updateResult("is no, ");
+    switchPriority();
     defenderResponse();
   } else if (event.target.id === "parrynoriposte") {
-    document.getElementById("result").innerHTML += "is parried, no riposte. ";
+    updateResult("is parried, no riposte. ");
     attackContinuation();
   } else if (event.target.id === "parryriposte") {
-    document.getElementById("result").innerHTML += "is parried, riposte ";
+    updateResult("is parried, riposte ");
+    switchPriority();
+    attackResult("riposte");
+  } else if (event.target.id === "nocounterriposte") {
+    updateResult("is counterparried, no counterriposte. ");
+    attackContinuation();
+  } else if (event.target.id === "counterriposte") {
+    updateResult("is counterparried, counterriposte ");
+    switchPriority();
     attackResult("riposte");
   } else {
       console.log("Error: check control statements in initialUpdate")
@@ -74,28 +102,27 @@ function defenderResponse() {
 
 function defenderUpdate(event) {
   if (event.target.id === "y") {
-    document.getElementById("result").innerHTML += "counterattack ";
+    updateResult("counterattack ");
     attackResult("counterattack");
   } else if (event.target.id === "n") {
+    switchPriority();
     attackContinuation();
   }
 }
 
 function attackContinuation() {
   document.getElementById("userPrompt").innerHTML = "Did the attacker continue their attack?";
-  const actions = {"remise": "Yes, remise", "redoublement": "Yes, redoublement", "no": "No"};
+  const actions = {"remise": "Yes, remise", "no": "No"};
   createButtons(actions, continuationUpdate);
 }
 
 function continuationUpdate(event) {
   if (event.target.id === "remise") {
-    document.getElementById("result").innerHTML += "remise ";
+    updateResult("remise ");
     attackResult("remise");
-  } else if (event.target.id === "redoublement") {
-    document.getElementById("result").innerHTML += "redoublement ";
-    attackResult("redoublement");
   } else if (event.target.id === "no") {
-    document.getElementById("result").innerHTML += "action resets. ";
+    updateResult("action resets. ");
+    updatePriority("none");
     initial();
   }
 }
@@ -110,29 +137,30 @@ function polResult() {
 }
 
 function polUpdate(event) {
-  document.getElementById("result").innerHTML += event.target.id;
+  updateResult(event.target.id);
   if (event.target.id === "arrives, ") {
     awardTouch();
   } else {
+    updatePriority("none");
     initial();
   }
 }
 
 function awardTouch() {
-  document.getElementById("result").innerHTML += "touch.";
+  updateResult("touch " + currentPriority() + ".");
   showResult();
 }
 
 function noTouch() {
-  document.getElementById("result").innerHTML += "no touch.";
+  updateResult("no touch.");
   showResult();
 }
 
 function showResult() {
   document.getElementById("userPrompt").style.visibility = "hidden";
   document.getElementById("buttons").style.visibility = "hidden";
+  document.getElementById("priority").style.visibility = "hidden";
   document.getElementById("result").style.visibility = "visible";
-  //createResetButtion();
 }
 
 function createButtons(actions, resultFunc) {
@@ -162,4 +190,40 @@ function createResetButtion() {
   resetButton.value = "Reset"
   resetButton.addEventListener("click", reset);
   resetElement.appendChild(resetButton)
+}
+
+function updatePriority(fencer) {
+  if (fencer === "none") {
+    document.getElementById("priority").innerHTML = "<strong>Current priority:</strong> None";
+  } else if (fencer === "right") {
+    document.getElementById("priority").innerHTML = "<strong>Current priority:</strong> Right";
+  } else if (fencer === "left") {
+    document.getElementById("priority").innerHTML = "<strong>Current priority:</strong> Left";
+  }
+}
+
+function switchPriority() {
+  if (currentPriority() === "right") {
+    updatePriority("left");
+  } else if (currentPriority() === "left") {
+    updatePriority("right");
+  } else {
+    console.log("Error: switchPriority requires a currentPriority left or right to switch")
+  }
+}
+
+function currentPriority() {
+  if (document.getElementById("priority").innerHTML === "<strong>Current priority:</strong> Right") {
+    return "right";
+  } else if (document.getElementById("priority").innerHTML === "<strong>Current priority:</strong> Left") {
+    return "left";
+  } else if (document.getElementById("priority").innerHTML === "<strong>Current priority:</strong> None") {
+    return "none";
+  } else {
+    console.log("Error: Check control statements in currentPriority.")
+  }
+}
+
+function updateResult(action) {
+  document.getElementById("result").innerHTML += action;
 }
