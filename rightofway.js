@@ -39,8 +39,13 @@ function initialUpdate(event) {
   } else if (event.target.id === "simul" || event.target.id ===  "ycright" || event.target.id === "ycleft") {
       updateResult(event.target.value + ", ");
       noTouch();
-  } else if (event.target.id === "rcleft" || event.target.id ===  "rcright") {
+  } else if (event.target.id === "rcleft") {
       updateResult(event.target.value + ", ");
+      updatePriority("left");
+      awardTouch();
+  } else if (event.target.id ===  "rcright") {
+      updateResult(event.target.value + ", ");
+      updatePriority("right");
       awardTouch();
   } else {
       console.log("Error: check control statements in initialUpdate");
