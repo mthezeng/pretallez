@@ -43,14 +43,14 @@ function initialUpdate(event) {
       updateResult(event.target.value + ", ");
       awardTouch();
   } else {
-      console.log("Error: check control statements in initialUpdate")
+      console.log("Error: check control statements in initialUpdate");
   }
 }
 
 function attackResult(attack_type) {
   document.getElementById("userPrompt").innerHTML = "What was the result of the " + attack_type + "?"
   let b = document.getElementById("attackButtons");
-  let actions
+  let actions;
   if (attack_type === "riposte") {
     actions = {"arrives": attack_type + " arrives", "offtarget": attack_type + " off target",
                     "misses": attack_type + " misses", "nocounterriposte": attack_type + " is counterparried, no counterriposte",
@@ -60,7 +60,7 @@ function attackResult(attack_type) {
                     "misses": attack_type + " misses", "parrynoriposte": attack_type + " is parried, no riposte",
                     "parryriposte": attack_type + " is parried, riposte"};
   }
-  createButtons(actions, attackUpdate)
+  createButtons(actions, attackUpdate);
 }
 
 function attackUpdate(event) {
@@ -90,13 +90,13 @@ function attackUpdate(event) {
     switchPriority();
     attackResult("riposte");
   } else {
-      console.log("Error: check control statements in initialUpdate")
+      console.log("Error: check control statements in initialUpdate");
   }
 }
 
 function defenderResponse() {
   document.getElementById("userPrompt").innerHTML = "Did the defender respond with a counterattack?"
-  const response = {"y": "Yes", "n": "No"};
+  const response = {"y": "Counterattack", "n": "No counterattack"};
   createButtons(response, defenderUpdate);
 }
 
@@ -164,6 +164,11 @@ function showResult() {
 }
 
 function createButtons(actions, resultFunc) {
+  /* parameters:
+      actions: a dictionary with the keys as ids for button elements to be created
+                and values as the values of the buttons, i.e. the text of the buttons
+      resultFunc: a function to be called when the buttons are clicked
+   */
   const element = document.getElementById("buttons");
 
   // remove all previous buttons
@@ -208,7 +213,7 @@ function switchPriority() {
   } else if (currentPriority() === "left") {
     updatePriority("right");
   } else {
-    console.log("Error: switchPriority requires a currentPriority left or right to switch")
+    console.log("Error: switchPriority requires a currentPriority left or right to switch");
   }
 }
 
@@ -220,7 +225,7 @@ function currentPriority() {
   } else if (document.getElementById("priority").innerHTML === "<strong>Current priority:</strong> None") {
     return "none";
   } else {
-    console.log("Error: Check control statements in currentPriority.")
+    console.log("Error: Check control statements in currentPriority.");
   }
 }
 
