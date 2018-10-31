@@ -31,11 +31,11 @@ function initialUpdate(event) {
   } else if (event.target.id ===  "polleft") {
       updateResult(event.target.value + " ");
       updatePriority("left");
-      polResult();
+      awardTouch();
   } else if (event.target.id === "polright") {
       updateResult(event.target.value + " ");
       updatePriority("right");
-      polResult();
+      awardTouch();
   } else if (event.target.id === "simul" || event.target.id ===  "ycright" || event.target.id === "ycleft") {
       updateResult(event.target.value + ", ");
       noTouch();
@@ -137,25 +137,6 @@ function continuationUpdate(event) {
     attackResult("remise");
   } else if (event.target.id === "no") {
     updateResult("action resets. ");
-    updatePriority("none");
-    initial();
-  }
-}
-
-function polResult() {
-  document.getElementById("userPrompt").innerHTML = "What was the result of the point-in-line?";
-  const actions = {"arrives, ": "Point-in-line arrives",
-                    "is broken. ": "Point-in-line broken",
-                    "is no. ": "Point-in-line misses",
-                    "is beaten. ": "Opponent beats the blade"};
-  createButtons(actions, polUpdate);
-}
-
-function polUpdate(event) {
-  updateResult(event.target.id);
-  if (event.target.id === "arrives, ") {
-    awardTouch();
-  } else {
     updatePriority("none");
     initial();
   }
