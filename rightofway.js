@@ -41,11 +41,11 @@ function initialUpdate(event) {
       noTouch();
   } else if (event.target.id === "rcleft") {
       updateResult(event.target.value + ", ");
-      updatePriority("left");
+      updatePriority("right");
       awardTouch();
   } else if (event.target.id ===  "rcright") {
       updateResult(event.target.value + ", ");
-      updatePriority("right");
+      updatePriority("left");
       awardTouch();
   } else {
       console.log("Error: check control statements in initialUpdate");
@@ -58,12 +58,11 @@ function attackResult(attack_type) {
   let actions;
   if (attack_type === "riposte") {
     actions = {"arrives": attack_type + " arrives", "offtarget": attack_type + " off target",
-                    "misses": attack_type + " misses", "nocounterriposte": attack_type + " is counterparried, no counterriposte",
-                    "counterriposte": attack_type + " is counterparried, counterriposte"};
+                    "misses": attack_type + " misses",
+                    "counterparried": attack_type + " is counterparried"};
   } else {
     actions = {"arrives": attack_type + " arrives", "offtarget": attack_type + " off target",
-                    "misses": attack_type + " misses", "parrynoriposte": attack_type + " is parried, no riposte",
-                    "parryriposte": attack_type + " is parried, riposte"};
+                    "misses": attack_type + " misses", "parried": attack_type + " is parried"};
   }
   createButtons(actions, attackUpdate);
 }
@@ -80,22 +79,33 @@ function attackUpdate(event) {
     updateResult("is no, ");
     switchPriority();
     defenderResponse();
-  } else if (event.target.id === "parrynoriposte") {
-    updateResult("is parried, no riposte. ");
-    attackContinuation();
-  } else if (event.target.id === "parryriposte") {
-    updateResult("is parried, riposte ");
+  } else if (event.target.id === "parried") {
+    updateResult("is parried, ");
     switchPriority();
-    attackResult("riposte");
-  } else if (event.target.id === "nocounterriposte") {
-    updateResult("is counterparried, no counterriposte. ");
-    attackContinuation();
-  } else if (event.target.id === "counterriposte") {
-    updateResult("is counterparried, counterriposte ");
+    riposte();
+  } else if (event.target.id === "counterparried") {
+    updateResult("is counterparried, ");
     switchPriority();
-    attackResult("riposte");
+    riposte();
   } else {
       console.log("Error: check control statements in initialUpdate");
+  }
+}
+
+function riposte() {
+  document.getElementById("userPrompt").innerHTML = "Was there a riposte after the parry?";
+  const actions = {"y": "Yes, riposte", "n": "No riposte"};
+  createButtons(actions, riposteUpdate);
+}
+
+function riposteUpdate(event) {
+  if (event.target.id === "y") {
+    updateResult("riposte ");
+    attackResult("riposte");
+  } else if (event.target.id === "n") {
+    updateResult("no riposte, ");
+    switchPriority();
+    attackContinuation();
   }
 }
 
