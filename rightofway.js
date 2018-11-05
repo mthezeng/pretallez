@@ -29,7 +29,7 @@ function Action(type, fencer, result) {
 }
 
 Action.prototype.toString = function() {
-  return this.name + " " this.fencer + " " + this.result;
+  return this.type + " " + this.fencer + " " + this.result;
 }
 
 /** Resets the buttons to the initial state. */
@@ -102,13 +102,20 @@ function attackResult(attackType) {
        "offtarget": attackType + " off target",
        "misses": attackType + " misses",
        "parried": attackType + " is parried"};
-  } else {
+  } else if (attackType === "counterattack") {
      actions = {
        "arrives": attackType + " arrives",
        "offtarget": attackType + " off target",
        "misses2nd": attackType + " misses",
-       "counterparried": attackType + " is counterparried"
+       "parried": attackType + " is parried",
      };
+  } else {
+    actions = {
+      "arrives": attackType + " arrives",
+      "offtarget": attackType + " off target",
+      "misses2nd": attackType + " misses",
+      "counterparried": attackType + " is counterparried"
+    };
   }
   createButtons(actions, attackUpdate);
 }
