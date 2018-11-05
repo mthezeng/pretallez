@@ -10,11 +10,17 @@ function reset() {
 
 function initial() {
   document.getElementById("userPrompt").innerHTML = "What was the action?";
-  const actions = {"attackleft": "Attack left", "attackright": "Attack right",
-                    "polleft": "Point-in-line left", "polright": "Point-in-line right",
-                     "simul": "Simultaneous attacks", "ycleft": "Yellow card left",
-                     "ycright": "Yellow card right", "rcleft": "Red card left",
-                     "rcright": "Red card right"};
+  const actions = {
+    "attackleft": "Attack left",
+    "attackright": "Attack right",
+    "polleft": "Point-in-line left",
+    "polright": "Point-in-line right",
+    "simul": "Simultaneous attacks",
+    "ycleft": "Yellow card left",
+    "ycright": "Yellow card right",
+    "rcleft": "Red card left",
+    "rcright": "Red card right"
+  };
   createButtons(actions, initialUpdate);
 }
 
@@ -57,12 +63,18 @@ function attackResult(attack_type) {
   let b = document.getElementById("attackButtons");
   let actions;
   if (attack_type === "riposte") {
-    actions = {"arrives": attack_type + " arrives", "offtarget": attack_type + " off target",
-                    "misses": attack_type + " misses",
-                    "counterparried": attack_type + " is counterparried"};
+    actions = {
+      "arrives": attack_type + " arrives",
+      "offtarget": attack_type + " off target",
+      "missesriposte": attack_type + " misses",
+      "counterparried": attack_type + " is counterparried"
+    };
   } else {
-    actions = {"arrives": attack_type + " arrives", "offtarget": attack_type + " off target",
-                    "misses": attack_type + " misses", "parried": attack_type + " is parried"};
+    actions = {
+      "arrives": attack_type + " arrives"
+       "offtarget": attack_type + " off target",
+       "misses": attack_type + " misses",
+       "parried": attack_type + " is parried"};
   }
   createButtons(actions, attackUpdate);
 }
@@ -79,6 +91,10 @@ function attackUpdate(event) {
     updateResult("is no, ");
     switchPriority();
     defenderResponse();
+  } else if (event.target.id === "missesriposte") {
+    updateResult("is no, ");
+    switchPriority();
+    attackContinuation();
   } else if (event.target.id === "parried") {
     updateResult("is parried, ");
     switchPriority();
