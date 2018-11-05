@@ -15,11 +15,7 @@ function initial() {
     "attackright": "Attack right",
     "polleft": "Point-in-line left",
     "polright": "Point-in-line right",
-    "simul": "Simultaneous attacks",
-    "ycleft": "Yellow card left",
-    "ycright": "Yellow card right",
-    "rcleft": "Red card left",
-    "rcright": "Red card right"
+    "simul": "Simultaneous attacks"
   };
   createButtons(actions, initialUpdate);
 }
@@ -42,17 +38,9 @@ function initialUpdate(event) {
       updateResult(event.target.value + ", ");
       updatePriority("right");
       awardTouch();
-  } else if (event.target.id === "simul" || event.target.id ===  "ycright" || event.target.id === "ycleft") {
+  } else if (event.target.id === "simul") {
       updateResult(event.target.value + ", ");
       noTouch();
-  } else if (event.target.id === "rcleft") {
-      updateResult(event.target.value + ", ");
-      updatePriority("right");
-      awardTouch();
-  } else if (event.target.id ===  "rcright") {
-      updateResult(event.target.value + ", ");
-      updatePriority("left");
-      awardTouch();
   } else {
       console.log("Error: check if statements in initialUpdate");
   }
@@ -62,19 +50,19 @@ function attackResult(attack_type) {
   document.getElementById("userPrompt").innerHTML = "What was the result of the " + attack_type + "?"
   let b = document.getElementById("attackButtons");
   let actions;
-  if (attack_type === "riposte" || attack_type === "remise") {
-    actions = {
-      "arrives": attack_type + " arrives",
-      "offtarget": attack_type + " off target",
-      "missesriposte": attack_type + " misses",
-      "counterparried": attack_type + " is counterparried"
-    };
-  } else {
+  if (attack_type === "attack") {
     actions = {
       "arrives": attack_type + " arrives",
        "offtarget": attack_type + " off target",
        "misses": attack_type + " misses",
        "parried": attack_type + " is parried"};
+  } else {
+     actions = {
+       "arrives": attack_type + " arrives",
+       "offtarget": attack_type + " off target",
+       "misses2nd": attack_type + " misses",
+       "counterparried": attack_type + " is counterparried"
+     };
   }
   createButtons(actions, attackUpdate);
 }
@@ -91,7 +79,7 @@ function attackUpdate(event) {
     updateResult("is no, ");
     switchPriority();
     defenderResponse();
-  } else if (event.target.id === "missesriposte") {
+  } else if (event.target.id === "misses2nd") {
     updateResult("is no, ");
     switchPriority();
     attackContinuation();
@@ -109,7 +97,7 @@ function attackUpdate(event) {
 }
 
 function riposte() {
-  document.getElementById("userPrompt").innerHTML = "Was there a riposte after the parry?";
+  document.getElementById("userPrompt").innerHTML = "Was there a riposte attempt after the parry?";
   const actions = {"y": "Yes, riposte", "n": "No riposte"};
   createButtons(actions, riposteUpdate);
 }
@@ -126,7 +114,7 @@ function riposteUpdate(event) {
 }
 
 function defenderResponse() {
-  document.getElementById("userPrompt").innerHTML = "Did the defender respond with a counterattack?"
+  document.getElementById("userPrompt").innerHTML = "Did the fencer on the " + currentPriority() + " respond with a counterattack?"
   const response = {"y": "Counterattack", "n": "No counterattack"};
   createButtons(response, defenderUpdate);
 }
@@ -142,7 +130,7 @@ function defenderUpdate(event) {
 }
 
 function attackContinuation() {
-  document.getElementById("userPrompt").innerHTML = "Did the attacker continue their attack?";
+  document.getElementById("userPrompt").innerHTML = "Did the fencer on the " + currentPriority() + " continue their action?";
   const actions = {"remise": "Yes, remise", "no": "No"};
   createButtons(actions, continuationUpdate);
 }
@@ -205,9 +193,9 @@ function createResetButtion() {
   let resetButton = document.createElement("input");
   resetButton.type = "button";
   resetButton.id = "reset";
-  resetButton.value = "Reset"
+  resetButton.value = "Reset";
   resetButton.addEventListener("click", reset);
-  resetElement.appendChild(resetButton)
+  resetElement.appendChild(resetButton);
 }
 
 function updatePriority(fencer) {
