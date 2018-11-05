@@ -71,7 +71,7 @@ function attackResult(attack_type) {
     };
   } else {
     actions = {
-      "arrives": attack_type + " arrives"
+      "arrives": attack_type + " arrives",
        "offtarget": attack_type + " off target",
        "misses": attack_type + " misses",
        "parried": attack_type + " is parried"};
