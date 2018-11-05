@@ -10,7 +10,6 @@ opponent's turn to hit. If two fencers touch at the same time, it is the referee
 and award a touch to that person.
 
 On index.html, you will find a tool which will allow you to construct a fencing referee's call based on the rules of
-right-of-way. The implementation for this feature is very rough right now because I am just starting to learn how to use
-JavaScript and HTML. However, in the future, I envision this feature could be applied to videos of fencing actions. Users would
+right-of-way. In the future, I envision this feature could be applied to videos of fencing actions. Users would
 be able to input what they would call if they were refereeing, and Pret Allez would compare their input against what the
 referee in the video actually called. In this way, we could develop a fun and unique way of training fencing referees!
