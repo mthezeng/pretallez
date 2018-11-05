@@ -62,7 +62,7 @@ function attackResult(attack_type) {
   document.getElementById("userPrompt").innerHTML = "What was the result of the " + attack_type + "?"
   let b = document.getElementById("attackButtons");
   let actions;
-  if (attack_type === "riposte") {
+  if (attack_type === "riposte" || attack_type === "remise") {
     actions = {
       "arrives": attack_type + " arrives",
       "offtarget": attack_type + " off target",
@@ -152,9 +152,8 @@ function continuationUpdate(event) {
     updateResult("remise ");
     attackResult("remise");
   } else if (event.target.id === "no") {
-    updateResult("action resets. ");
     updatePriority("none");
-    initial();
+    noTouch();
   }
 }
 
