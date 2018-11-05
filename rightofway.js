@@ -35,11 +35,11 @@ function initialUpdate(event) {
       updatePriority("right");
       attackResult("attack");
   } else if (event.target.id ===  "polleft") {
-      updateResult(event.target.value + " ");
+      updateResult(event.target.value + ", ");
       updatePriority("left");
       awardTouch();
   } else if (event.target.id === "polright") {
-      updateResult(event.target.value + " ");
+      updateResult(event.target.value + ", ");
       updatePriority("right");
       awardTouch();
   } else if (event.target.id === "simul" || event.target.id ===  "ycright" || event.target.id === "ycleft") {
@@ -54,7 +54,7 @@ function initialUpdate(event) {
       updatePriority("left");
       awardTouch();
   } else {
-      console.log("Error: check control statements in initialUpdate");
+      console.log("Error: check if statements in initialUpdate");
   }
 }
 
@@ -104,7 +104,7 @@ function attackUpdate(event) {
     switchPriority();
     riposte();
   } else {
-      console.log("Error: check control statements in initialUpdate");
+      console.log("Error: check if statements in initialUpdate");
   }
 }
 
@@ -174,12 +174,14 @@ function showResult() {
   document.getElementById("result").style.visibility = "visible";
 }
 
+
+ /**
+ * Creates the buttons given a set of actions and results.
+ * @param {Object} actions - a set of possible actions in the current fencing phrase,
+                            keys are ids for button elements, values are text of buttons
+ * @param {function} resultFunc - a function to be called when the buttons are clicked
+ */
 function createButtons(actions, resultFunc) {
-  /* parameters:
-      actions: a dictionary with the keys as ids for button elements to be created
-                and values as the values of the buttons, i.e. the text of the buttons
-      resultFunc: a function to be called when the buttons are clicked
-   */
   const element = document.getElementById("buttons");
 
   // remove all previous buttons
