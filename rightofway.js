@@ -46,8 +46,7 @@ Call.prototype.equals = function(anotherCall) {
 
 /** Object representing a single fencing action.
  * @constructor
- * @param {string} name - the name of the action, e.g. "attack", "parry",
-                          "riposte", etc.
+ * @param {string} type - the kind of action, e.g. "attack", "riposte", etc.
  * @param {string} fencer - either "left" or "right": the fencer that performed
                             this action
  * @param {string} result - optional (should be defined later, though).
@@ -60,7 +59,8 @@ function Action(type, fencer, result) {
   this.result = result || "none";
 }
 
-/** String representation of this Call.
+/** String representation of this action.
+ * @override
  * @returns {string}
  */
 Action.prototype.toString = function() {
@@ -77,7 +77,7 @@ Action.prototype.equals = function(anotherAction) {
         (this.result === anotherAction.result);
 }
 
-/** Objects representing specific kinds of fencing actions.
+/** Represents a point-in-line, a special kind of Action.
  * @constructor
  */
 function PointInLine(fencer) {
@@ -86,9 +86,11 @@ function PointInLine(fencer) {
 
 PointInLine.prototype = Object.create(Action.prototype);
 
-/** @constructor */
+/** Represents simultaneous attacks, a special kind of Action.
+ * @constructor
+ */
 function Simultaneous() {
-  Action.call(this, "simultaneous", "", "");
+  Action.call(this, "simultaneous", "none", "none");
 }
 
 Simultaneous.prototype = Object.create(Action.prototype);
@@ -298,8 +300,8 @@ function continuationUpdate(event) {
 
 /** Ends the current fencing phrase with a touch to the fencer with priority. */
 function awardTouch() {
-  updateResult("touch " + currentPriority() + ".");
   userCall.result = currentPriority();
+  updateResult("touch " + currentPriority() + ".");
   showResult();
 }
 
