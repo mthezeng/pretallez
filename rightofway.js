@@ -3,7 +3,7 @@
  */
 function Call() {
   this.actions = [];
-  this.result = "none";
+  this.result = "";
 }
 
 /** String representation of this Call.
@@ -16,16 +16,25 @@ Call.prototype.toString = function() {
     for (i = 0; i < this.actions.length - 1; i++) {
       result += this.actions[i].toString() + ", ";
     }
-    result += this.actions[i].toString() + ". ";
-    if (this.result === "left") {
-      result += "touch left.";
-    } else if (this.result === "right") {
-      result += "touch right.";
-    } else {
-      result += "no touch."
+
+    // end the last action with a period
+    if (i < this.actions.length) {
+      result += this.actions[i].toString() + ". ";
     }
-    return result;
+
+    // capitalize first action
+    result = result.charAt(0).toUpperCase() + result.substring(1);
+
+    // announce the result of the call
+    if (this.result === "left") {
+      result += "Touch left.";
+    } else if (this.result === "right") {
+      result += "Touch right.";
+    } else {
+      result += "No touch."
+    }
   }
+  return result;
 }
 
 /** Checks whether one Call is the same as another Call.
@@ -44,6 +53,18 @@ Call.prototype.equals = function(anotherCall) {
   return true;
 }
 
+/** Returns whether this call represents a complete fencing phrase.
+ * @returns {boolean}
+ */
+Call.prototype.done = function() {
+  if (this.actions.length === 0) {
+    return false;
+  }
+  for (let i = 0; i < this.actions.length; i++) {
+
+  }
+}
+
 /** Object representing a single fencing action.
  * @constructor
  * @param {string} type - the kind of action, e.g. "attack", "riposte", etc.
@@ -56,7 +77,7 @@ Call.prototype.equals = function(anotherCall) {
 function Action(type, fencer, result) {
   this.type = type;
   this.fencer = fencer;
-  this.result = result || "none";
+  this.result = result || "";
 }
 
 /** String representation of this action.
@@ -84,6 +105,7 @@ function PointInLine(fencer) {
   Action.call(this, "point-in-line", fencer, "arrives");
 }
 
+/** PointInLine extends Action */
 PointInLine.prototype = Object.create(Action.prototype);
 
 /** Represents simultaneous attacks, a special kind of Action.
@@ -93,6 +115,7 @@ function Simultaneous() {
   Action.call(this, "simultaneous", "none", "none");
 }
 
+/** Simultaneous extends Action */
 Simultaneous.prototype = Object.create(Action.prototype);
 
 /** String representation of simultaneous has no attached fencer or result.
@@ -176,7 +199,8 @@ function attackResult(attackType) {
       "arrives": attackType + " arrives",
        "offtarget": attackType + " off target",
        "misses": attackType + " misses",
-       "parried": attackType + " is parried"};
+       "parried": attackType + " is parried"
+     };
   } else if (attackType === "counterattack") {
      actions = {
        "arrives": attackType + " arrives",
@@ -202,31 +226,31 @@ function attackUpdate(event) {
   // document.getElementById("result").style.visibility = "visible";
   let currentAction = userCall.actions[userCall.actions.length - 1];
   if (event.target.id === "arrives") {
-    updateResult("arrives, ");
     currentAction.result = "arrives";
+    updateResult("arrives, ");
     awardTouch();
   } else if (event.target.id === "offtarget") {
+    currentAction.result = "is off target";
     updateResult("is off target, ");
-    currentAction.result = "off target";
     noTouch();
   } else if (event.target.id === "misses") {
-    updateResult("is no, ");
     currentAction.result = "is no";
+    updateResult("is no, ");
     switchPriority();
     defenderResponse();
   } else if (event.target.id === "misses2nd") {
-    updateResult("is no, ");
     currentAction.result = "is no";
+    updateResult("is no, ");
     switchPriority();
     attackContinuation();
   } else if (event.target.id === "parried") {
+    currentAction.result = "is parried";
     updateResult("is parried, ");
-    currentAction.result = "parried";
     switchPriority();
     riposte();
   } else if (event.target.id === "counterparried") {
+    currentAction.result = "is counterparried";
     updateResult("is counterparried, ");
-    currentAction.result = "counterparried";
     switchPriority();
     riposte();
   } else {
