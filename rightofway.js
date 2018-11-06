@@ -3,7 +3,7 @@
  */
 function Call() {
   this.actions = [];
-  this.result = "none";
+  this.result = "";
 }
 
 /** String representation of this Call.
@@ -16,16 +16,27 @@ Call.prototype.toString = function() {
     for (i = 0; i < this.actions.length - 1; i++) {
       result += this.actions[i].toString() + ", ";
     }
-    result += this.actions[i].toString() + ". ";
-    if (this.result === "left") {
-      result += "touch left.";
-    } else if (this.result === "right") {
-      result += "touch right.";
-    } else {
-      result += "no touch."
+
+    // don't end the last action with a comma
+    if (i < this.actions.length) {
+      result += this.actions[i].toString();
     }
-    return result;
+
+    // capitalize first action
+    result = result.charAt(0).toUpperCase() + result.substring(1);
+
+    // announce the result of the call if call is completely constructed
+    if (this.done()) {
+      if (this.result === "left") {
+        result += ". Touch left.";
+      } else if (this.result === "right") {
+        result += ". Touch right.";
+      } else {
+        result += ". No touch."
+      }
+    }
   }
+  return result;
 }
 
 /** Checks whether one Call is the same as another Call.
@@ -44,6 +55,21 @@ Call.prototype.equals = function(anotherCall) {
   return true;
 }
 
+/** Returns whether this call represents a complete fencing phrase.
+ * @returns {boolean}
+ */
+Call.prototype.done = function() {
+  if (this.actions.length === 0) {
+    return false;
+  } else if (this.actions[0] instanceof Simultaneous ||
+            this.actions[0] instanceof PointInLine) {
+    return true;
+  } else {
+    let lastAction = this.actions[this.actions.length - 1];
+    return lastAction.result === "arrives" || lastAction.result === "is off target";
+  }
+}
+
 /** Object representing a single fencing action.
  * @constructor
  * @param {string} type - the kind of action, e.g. "attack", "riposte", etc.
@@ -56,7 +82,7 @@ Call.prototype.equals = function(anotherCall) {
 function Action(type, fencer, result) {
   this.type = type;
   this.fencer = fencer;
-  this.result = result || "none";
+  this.result = result || "";
 }
 
 /** String representation of this action.
@@ -79,11 +105,14 @@ Action.prototype.equals = function(anotherAction) {
 
 /** Represents a point-in-line, a special kind of Action.
  * @constructor
+ * @param {string} fencer - either "left" or "right": the fencer that performed
+                            this action
  */
 function PointInLine(fencer) {
   Action.call(this, "point-in-line", fencer, "arrives");
 }
 
+/** PointInLine extends Action */
 PointInLine.prototype = Object.create(Action.prototype);
 
 /** Represents simultaneous attacks, a special kind of Action.
@@ -93,6 +122,7 @@ function Simultaneous() {
   Action.call(this, "simultaneous", "none", "none");
 }
 
+/** Simultaneous extends Action */
 Simultaneous.prototype = Object.create(Action.prototype);
 
 /** String representation of simultaneous has no attached fencer or result.
@@ -102,10 +132,30 @@ Simultaneous.prototype.toString = function() {
   return this.type;
 }
 
+/** Represents a lack of riposte following a parry.
+ * @constructor
+ * @param {string} fencer - either "left" or "right": the fencer that performed
+                            this action
+ */
+function NoRiposte(fencer) {
+  Action.call(this, "no riposte", fencer, "");
+}
+
+/** NoRiposte extends Action */
+NoRiposte.prototype = Object.create(Action.prototype);
+
+/** String representation of no riposte has no result; the fencer in question
+ * is easily identifiable from the previous action.
+ * @override
+ */
+NoRiposte.prototype.toString = function() {
+  return this.type;
+}
+
 /** Global variable for the current user-inputted call. */
 let userCall = new Call();
 
-/** Resets the buttons to the initial state. */
+/** Resets the user interface to the initial state. */
 function reset() {
   document.getElementById("userPrompt").style.visibility = "visible";
   document.getElementById("buttons").style.visibility = "visible";
@@ -136,26 +186,21 @@ function initial() {
 function initialUpdate(event) {
   document.getElementById("result").style.visibility = "visible";
   if (event.target.id === "attackleft") {
-      updateResult(event.target.value + " ");
       updatePriority("left");
       attackResult("attack");
   } else if (event.target.id === "attackright") {
-      updateResult(event.target.value + " ");
       updatePriority("right");
       attackResult("attack");
   } else if (event.target.id ===  "polleft") {
       userCall.actions.push(new PointInLine("left"));
-      updateResult(event.target.value + ", ");
       updatePriority("left");
       awardTouch();
   } else if (event.target.id === "polright") {
       userCall.actions.push(new PointInLine("right"));
-      updateResult(event.target.value + ", ");
       updatePriority("right");
       awardTouch();
   } else if (event.target.id === "simul") {
       userCall.actions.push(new Simultaneous());
-      updateResult(event.target.value + ", ");
       noTouch();
   } else {
       console.log("Error: check if statements in initialUpdate");
@@ -168,6 +213,7 @@ function initialUpdate(event) {
  */
 function attackResult(attackType) {
   userCall.actions.push(new Action(attackType, currentPriority()));
+  updateResult();
   document.getElementById("userPrompt").innerHTML = "What was the result of the " + attackType + "?";
   let b = document.getElementById("attackButtons");
   let actions;
@@ -176,7 +222,8 @@ function attackResult(attackType) {
       "arrives": attackType + " arrives",
        "offtarget": attackType + " off target",
        "misses": attackType + " misses",
-       "parried": attackType + " is parried"};
+       "parried": attackType + " is parried"
+     };
   } else if (attackType === "counterattack") {
      actions = {
        "arrives": attackType + " arrives",
@@ -202,31 +249,29 @@ function attackUpdate(event) {
   // document.getElementById("result").style.visibility = "visible";
   let currentAction = userCall.actions[userCall.actions.length - 1];
   if (event.target.id === "arrives") {
-    updateResult("arrives, ");
     currentAction.result = "arrives";
     awardTouch();
   } else if (event.target.id === "offtarget") {
-    updateResult("is off target, ");
-    currentAction.result = "off target";
+    currentAction.result = "is off target";
     noTouch();
   } else if (event.target.id === "misses") {
-    updateResult("is no, ");
     currentAction.result = "is no";
+    updateResult();
     switchPriority();
     defenderResponse();
   } else if (event.target.id === "misses2nd") {
-    updateResult("is no, ");
     currentAction.result = "is no";
+    updateResult();
     switchPriority();
     attackContinuation();
   } else if (event.target.id === "parried") {
-    updateResult("is parried, ");
-    currentAction.result = "parried";
+    currentAction.result = "is parried";
+    updateResult();
     switchPriority();
     riposte();
   } else if (event.target.id === "counterparried") {
-    updateResult("is counterparried, ");
-    currentAction.result = "counterparried";
+    currentAction.result = "is counterparried";
+    updateResult();
     switchPriority();
     riposte();
   } else {
@@ -246,10 +291,11 @@ function riposte() {
  */
 function riposteUpdate(event) {
   if (event.target.id === "y") {
-    updateResult("riposte ");
+    updateResult();
     attackResult("riposte");
   } else if (event.target.id === "n") {
-    updateResult("no riposte, ");
+    userCall.actions.push(new NoRiposte(currentPriority()));
+    updateResult();
     switchPriority();
     attackContinuation();
   }
@@ -267,7 +313,7 @@ function defenderResponse() {
  */
 function defenderUpdate(event) {
   if (event.target.id === "y") {
-    updateResult("counterattack ");
+    updateResult();
     attackResult("counterattack");
   } else if (event.target.id === "n") {
     switchPriority();
@@ -290,7 +336,7 @@ function attackContinuation() {
  */
 function continuationUpdate(event) {
   if (event.target.id === "remise") {
-    updateResult("remise ");
+    updateResult();
     attackResult("remise");
   } else if (event.target.id === "no") {
     updatePriority("none");
@@ -301,13 +347,13 @@ function continuationUpdate(event) {
 /** Ends the current fencing phrase with a touch to the fencer with priority. */
 function awardTouch() {
   userCall.result = currentPriority();
-  updateResult("touch " + currentPriority() + ".");
+  updateResult();
   showResult();
 }
 
 /** Ends the current fencing phrase with no touch to either fencer. */
 function noTouch() {
-  updateResult("no touch.");
+  updateResult();
   showResult();
 }
 
@@ -318,7 +364,7 @@ function showResult() {
   document.getElementById("buttons").style.visibility = "hidden";
   document.getElementById("priority").style.visibility = "hidden";
   document.getElementById("result").style.visibility = "visible";
-  console.log(userCall);
+  // console.log(userCall);
 }
 
  /**
@@ -393,10 +439,7 @@ function currentPriority() {
   }
 }
 
-/** Updates the result displayed in the "result" element.
- * NOTE: Possibly could be superseded by the Call object's toString method in future.
- */
+/** Updates the result displayed in the "result" element. */
 function updateResult(action) {
-  document.getElementById("result").innerHTML += action;
-  console.log(userCall.toString());
+  document.getElementById("result").innerHTML = "<strong>Referee calls:</strong> " + userCall.toString();
 }
