@@ -17,9 +17,9 @@ Call.prototype.toString = function() {
       result += this.actions[i].toString() + ", ";
     }
 
-    // end the last action with a period
+    // don't end the last action with a comma
     if (i < this.actions.length) {
-      result += this.actions[i].toString() + ". ";
+      result += this.actions[i].toString();
     }
 
     // capitalize first action
@@ -28,11 +28,11 @@ Call.prototype.toString = function() {
     // announce the result of the call if call is completely constructed
     if (this.done()) {
       if (this.result === "left") {
-        result += "Touch left.";
+        result += ". Touch left.";
       } else if (this.result === "right") {
-        result += "Touch right.";
+        result += ". Touch right.";
       } else {
-        result += "No touch."
+        result += ". No touch."
       }
     }
   }
@@ -155,7 +155,7 @@ NoRiposte.prototype.toString = function() {
 /** Global variable for the current user-inputted call. */
 let userCall = new Call();
 
-/** Resets the buttons to the initial state. */
+/** Resets the user interface to the initial state. */
 function reset() {
   document.getElementById("userPrompt").style.visibility = "visible";
   document.getElementById("buttons").style.visibility = "visible";
