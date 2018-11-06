@@ -105,6 +105,8 @@ Action.prototype.equals = function(anotherAction) {
 
 /** Represents a point-in-line, a special kind of Action.
  * @constructor
+ * @param {string} fencer - either "left" or "right": the fencer that performed
+                            this action
  */
 function PointInLine(fencer) {
   Action.call(this, "point-in-line", fencer, "arrives");
@@ -130,6 +132,26 @@ Simultaneous.prototype.toString = function() {
   return this.type;
 }
 
+/** Represents a lack of riposte following a parry.
+ * @constructor
+ * @param {string} fencer - either "left" or "right": the fencer that performed
+                            this action
+ */
+function NoRiposte(fencer) {
+  Action.call(this, "no riposte", fencer, "");
+}
+
+/** NoRiposte extends Action */
+NoRiposte.prototype = Object.create(Action.prototype);
+
+/** String representation of no riposte has no result; the fencer in question
+ * is easily identifiable from the previous action.
+ * @override
+ */
+NoRiposte.prototype.toString = function() {
+  return this.type;
+}
+
 /** Global variable for the current user-inputted call. */
 let userCall = new Call();
 
@@ -142,6 +164,7 @@ function reset() {
   document.getElementById("result").innerHTML = "<strong>Referee calls:</strong> ";
   userCall = new Call();
   updatePriority("none");
+  oldResult = ""; //for testing only
   initial();
 }
 
@@ -196,6 +219,7 @@ function initialUpdate(event) {
  */
 function attackResult(attackType) {
   userCall.actions.push(new Action(attackType, currentPriority()));
+  updateResult("");
   document.getElementById("userPrompt").innerHTML = "What was the result of the " + attackType + "?";
   let b = document.getElementById("attackButtons");
   let actions;
@@ -278,6 +302,7 @@ function riposteUpdate(event) {
     updateResult("riposte ");
     attackResult("riposte");
   } else if (event.target.id === "n") {
+    userCall.actions.push(new NoRiposte(currentPriority()));
     updateResult("no riposte, ");
     switchPriority();
     attackContinuation();
@@ -422,10 +447,11 @@ function currentPriority() {
   }
 }
 
-/** Updates the result displayed in the "result" element.
- * NOTE: Possibly could be superseded by the Call object's toString method in future.
- */
+let oldResult = "";
+
+/** Updates the result displayed in the "result" element. */
 function updateResult(action) {
-  document.getElementById("result").innerHTML += action;
-  console.log(userCall.toString());
+  document.getElementById("result").innerHTML = "<strong>Referee calls:</strong> " + userCall.toString();
+  oldResult += action;
+  console.log(oldResult);
 }
