@@ -250,11 +250,9 @@ function attackUpdate(event) {
   let currentAction = userCall.actions[userCall.actions.length - 1];
   if (event.target.id === "arrives") {
     currentAction.result = "arrives";
-    updateResult();
     awardTouch();
   } else if (event.target.id === "offtarget") {
     currentAction.result = "is off target";
-    updateResult();
     noTouch();
   } else if (event.target.id === "misses") {
     currentAction.result = "is no";
