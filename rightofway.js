@@ -25,13 +25,15 @@ Call.prototype.toString = function() {
     // capitalize first action
     result = result.charAt(0).toUpperCase() + result.substring(1);
 
-    // announce the result of the call
-    if (this.result === "left") {
-      result += "Touch left.";
-    } else if (this.result === "right") {
-      result += "Touch right.";
-    } else {
-      result += "No touch."
+    // announce the result of the call if call is completely constructed
+    if (this.done()) {
+      if (this.result === "left") {
+        result += "Touch left.";
+      } else if (this.result === "right") {
+        result += "Touch right.";
+      } else {
+        result += "No touch."
+      }
     }
   }
   return result;
@@ -59,9 +61,12 @@ Call.prototype.equals = function(anotherCall) {
 Call.prototype.done = function() {
   if (this.actions.length === 0) {
     return false;
-  }
-  for (let i = 0; i < this.actions.length; i++) {
-
+  } else if (this.actions[0] instanceof Simultaneous ||
+            this.actions[0] instanceof PointInLine) {
+    return true;
+  } else {
+    let lastAction = this.actions[this.actions.length - 1];
+    return lastAction.result === "arrives" || lastAction.result === "is off target";
   }
 }
 
