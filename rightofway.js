@@ -65,9 +65,16 @@ Call.prototype.done = function() {
             this.actions[0] instanceof PointInLine) {
     return true;
   } else {
-    let lastAction = this.actions[this.actions.length - 1];
-    return lastAction.result === "arrives" || lastAction.result === "is off target";
+    return this.getLastAction().result === "arrives" ||
+            this.getLastAction().result === "is off target";
   }
+}
+
+/** Returns the last Action in this Call
+ * @returns {Action}
+ */
+Call.prototype.getLastAction = function() {
+  return this.actions[this.actions.length - 1];
 }
 
 /** Object representing a single fencing action.
@@ -159,7 +166,8 @@ let userCall = new Call();
 function reset() {
   document.getElementById("userPrompt").style.visibility = "visible";
   document.getElementById("buttons").style.visibility = "visible";
-  document.getElementById("priority").style.visibility = "visible"
+  document.getElementById("priority").style.visibility = "visible";
+  document.getElementById("instructions").style.visibility = "visible";
   document.getElementById("result").style.visibility = "hidden";
   document.getElementById("result").innerHTML = "<strong>Referee calls:</strong> ";
   userCall = new Call();
@@ -185,6 +193,7 @@ function initial() {
  */
 function initialUpdate(event) {
   document.getElementById("result").style.visibility = "visible";
+  document.getElementById("instructions").style.visibility = "hidden";
   if (event.target.id === "attackleft") {
       updatePriority("left");
       attackResult("attack");
