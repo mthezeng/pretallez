@@ -56,6 +56,8 @@ Call.prototype.equals = function(anotherCall) {
 }
 
 /** Returns whether this call represents a complete fencing phrase.
+ * Namely, whether the last action in this call is simultaneous, point-in-line,
+ * or an action whose result is either "arrives" or "is off target".
  * @returns {boolean}
  */
 Call.prototype.done = function() {
@@ -76,6 +78,20 @@ Call.prototype.done = function() {
 Call.prototype.getLastAction = function() {
   return this.actions[this.actions.length - 1];
 }
+
+/** Appends an Action to the end of this Call. Used to set an abstraction layer.
+ * @param {Action} action - the action to be appended
+ */
+Call.prototype.addAction = function(action) {
+  this.actions.push(action);
+}
+
+/** Sets the result of this call. Used to create an abtraction layer.
+ * @param {string} theResult - the result to be set
+ */
+ Call.prototype.setResult = function(theResult) {
+   this.result = theResult;
+ }
 
 /** Object representing a single fencing action.
  * @constructor
@@ -109,6 +125,13 @@ Action.prototype.equals = function(anotherAction) {
         (this.fencer === anotherAction.fencer) &&
         (this.result === anotherAction.result);
 }
+
+/** Sets the result of the current Action. Used to create an abtraction layer.
+ * @param {string} theResult - the result to be set
+ */
+ Action.prototype.setResult = function(theResult) {
+   this.result = theResult;
+ }
 
 /** Represents a point-in-line, a special kind of Action.
  * @constructor
@@ -201,15 +224,15 @@ function initialUpdate(event) {
       updatePriority("right");
       attackResult("attack");
   } else if (event.target.id ===  "polleft") {
-      userCall.actions.push(new PointInLine("left"));
+      userCall.addAction(new PointInLine("left"));
       updatePriority("left");
       awardTouch();
   } else if (event.target.id === "polright") {
-      userCall.actions.push(new PointInLine("right"));
+      userCall.addAction(new PointInLine("right"));
       updatePriority("right");
       awardTouch();
   } else if (event.target.id === "simul") {
-      userCall.actions.push(new Simultaneous());
+      userCall.addAction(new Simultaneous());
       noTouch();
   } else {
       console.log("Error: check if statements in initialUpdate");
@@ -221,7 +244,7 @@ function initialUpdate(event) {
                                 "counterattack", "riposte"
  */
 function attackResult(attackType) {
-  userCall.actions.push(new Action(attackType, currentPriority()));
+  userCall.addAction(new Action(attackType, currentPriority()));
   updateResult();
   document.getElementById("userPrompt").innerHTML = "What was the result of the " + attackType + "?";
   let b = document.getElementById("attackButtons");
@@ -256,30 +279,30 @@ function attackResult(attackType) {
  */
 function attackUpdate(event) {
   // document.getElementById("result").style.visibility = "visible";
-  let currentAction = userCall.actions[userCall.actions.length - 1];
+  let currentAction = userCall.getLastAction();
   if (event.target.id === "arrives") {
-    currentAction.result = "arrives";
+    currentAction.setResult("arrives");
     awardTouch();
   } else if (event.target.id === "offtarget") {
-    currentAction.result = "is off target";
+    currentAction.setResult("is off target");
     noTouch();
   } else if (event.target.id === "misses") {
-    currentAction.result = "is no";
+    currentAction.setResult("is no");
     updateResult();
     switchPriority();
     defenderResponse();
   } else if (event.target.id === "misses2nd") {
-    currentAction.result = "is no";
+    currentAction.setResult("is no");
     updateResult();
     switchPriority();
     attackContinuation();
   } else if (event.target.id === "parried") {
-    currentAction.result = "is parried";
+    currentAction.setResult("is parried");
     updateResult();
     switchPriority();
     riposte();
   } else if (event.target.id === "counterparried") {
-    currentAction.result = "is counterparried";
+    currentAction.setResult("is counterparried");
     updateResult();
     switchPriority();
     riposte();
@@ -303,7 +326,7 @@ function riposteUpdate(event) {
     updateResult();
     attackResult("riposte");
   } else if (event.target.id === "n") {
-    userCall.actions.push(new NoRiposte(currentPriority()));
+    userCall.addAction(new NoRiposte(currentPriority()));
     updateResult();
     switchPriority();
     attackContinuation();
@@ -355,7 +378,7 @@ function continuationUpdate(event) {
 
 /** Ends the current fencing phrase with a touch to the fencer with priority. */
 function awardTouch() {
-  userCall.result = currentPriority();
+  userCall.setResult(currentPriority());
   updateResult();
   showResult();
 }
