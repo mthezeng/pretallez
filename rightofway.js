@@ -133,6 +133,18 @@ Action.prototype.equals = function(anotherAction) {
    this.result = theResult;
  }
 
+ /** Gets the fencer who performed this action.
+  * @returns {string}
+  */
+Action.prototype.getFencer = function() {
+  if (this.fencer) {
+    return this.fencer;
+  } else {
+    console.log("Error: attempted to get a fencer for an action that did "
+    + "not have an attached fencer.");
+  }
+}
+
 /** Represents a point-in-line, a special kind of Action.
  * @constructor
  * @param {string} fencer - either "left" or "right": the fencer that performed
@@ -256,19 +268,19 @@ function attackResult(attackType) {
        "misses": attackType + " misses",
        "parried": attackType + " is parried"
      };
-  } else if (attackType === "counterattack") {
-     actions = {
-       "arrives": attackType + " arrives",
-       "offtarget": attackType + " off target",
-       "misses2nd": attackType + " misses",
-       "parried": attackType + " is parried",
-     };
-  } else {
+  } else if (attackType === "riposte") {
     actions = {
       "arrives": attackType + " arrives",
       "offtarget": attackType + " off target",
       "misses2nd": attackType + " misses",
       "counterparried": attackType + " is counterparried"
+    };
+  } else {
+    actions = {
+      "arrives": attackType + " arrives",
+      "offtarget": attackType + " off target",
+      "misses2nd": attackType + " misses",
+      "parried": attackType + " is parried",
     };
   }
   createButtons(actions, attackUpdate);
@@ -371,8 +383,12 @@ function continuationUpdate(event) {
     updateResult();
     attackResult("remise");
   } else if (event.target.id === "no") {
-    updatePriority("none");
-    noTouch();
+    if (userCall.getLastAction().getFencer() !== currentPriority()) {
+      switchPriority();
+      attackContinuation();
+    } else {
+      invalidInputError();
+    }
   }
 }
 
@@ -396,7 +412,6 @@ function showResult() {
   document.getElementById("buttons").style.visibility = "hidden";
   document.getElementById("priority").style.visibility = "hidden";
   document.getElementById("result").style.visibility = "visible";
-  // console.log(userCall);
 }
 
  /**
@@ -474,4 +489,19 @@ function currentPriority() {
 /** Updates the result displayed in the "result" element. */
 function updateResult(action) {
   document.getElementById("result").innerHTML = "<strong>Referee calls:</strong> " + userCall.toString();
+}
+
+/** Displays an error in the place of a referee call.
+ * @param {string} err - the error message to be displayed
+ */
+function showError(err) {
+  document.getElementById("result").innerHTML = "<strong>Error:</strong> " + err;
+  showResult();
+}
+
+/** Error message for inputs that do not result in halt. */
+function invalidInputError() {
+  showError("It doesn't look like this is a valid <em>last</em> fencing phrase.<br>"
+            + "Please ensure that you are only inputting the actions in the "
+            +"<em>last</em> fencing phrase, i.e. starting with an attack or point-in-line.");
 }
