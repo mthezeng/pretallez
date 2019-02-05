@@ -87,7 +87,7 @@ Call.prototype.addAction = function(action) {
 }
 
 /** Sets the result of this call. Used to create an abtraction layer.
- * @param {string} theResult - the result to be set
+ * @param {string} theResult - the result to be set, either "left" or "right"
  */
  Call.prototype.setResult = function(theResult) {
    this.result = theResult;
@@ -383,7 +383,8 @@ function continuationUpdate(event) {
     updateResult();
     attackResult("remise");
   } else if (event.target.id === "no") {
-    if (userCall.getLastAction().getFencer() !== currentPriority()) {
+    let last = userCall.getLastAction();
+    if (!(last instanceof NoRiposte) && (userCall.getLastAction().getFencer() !== currentPriority())) {
       switchPriority();
       attackContinuation();
     } else {
