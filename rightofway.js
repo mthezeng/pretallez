@@ -56,6 +56,8 @@ Call.prototype.equals = function(anotherCall) {
 }
 
 /** Returns whether this call represents a complete fencing phrase.
+ * Namely, whether the last action in this call is simultaneous, point-in-line,
+ * or an action whose result is either "arrives" or "is off target".
  * @returns {boolean}
  */
 Call.prototype.done = function() {
@@ -65,10 +67,31 @@ Call.prototype.done = function() {
             this.actions[0] instanceof PointInLine) {
     return true;
   } else {
-    let lastAction = this.actions[this.actions.length - 1];
-    return lastAction.result === "arrives" || lastAction.result === "is off target";
+    return this.getLastAction().result === "arrives" ||
+            this.getLastAction().result === "is off target";
   }
 }
+
+/** Returns the last Action in this Call
+ * @returns {Action}
+ */
+Call.prototype.getLastAction = function() {
+  return this.actions[this.actions.length - 1];
+}
+
+/** Appends an Action to the end of this Call. Used to set an abstraction layer.
+ * @param {Action} action - the action to be appended
+ */
+Call.prototype.addAction = function(action) {
+  this.actions.push(action);
+}
+
+/** Sets the result of this call. Used to create an abtraction layer.
+ * @param {string} theResult - the result to be set, either "left" or "right"
+ */
+ Call.prototype.setResult = function(theResult) {
+   this.result = theResult;
+ }
 
 /** Object representing a single fencing action.
  * @constructor
@@ -101,6 +124,25 @@ Action.prototype.equals = function(anotherAction) {
   return (this.type === anotherAction.type) &&
         (this.fencer === anotherAction.fencer) &&
         (this.result === anotherAction.result);
+}
+
+/** Sets the result of the current Action. Used to create an abtraction layer.
+ * @param {string} theResult - the result to be set
+ */
+ Action.prototype.setResult = function(theResult) {
+   this.result = theResult;
+ }
+
+ /** Gets the fencer who performed this action.
+  * @returns {string}
+  */
+Action.prototype.getFencer = function() {
+  if (this.fencer) {
+    return this.fencer;
+  } else {
+    console.log("Error: attempted to get a fencer for an action that did "
+    + "not have an attached fencer.");
+  }
 }
 
 /** Represents a point-in-line, a special kind of Action.
@@ -159,7 +201,8 @@ let userCall = new Call();
 function reset() {
   document.getElementById("userPrompt").style.visibility = "visible";
   document.getElementById("buttons").style.visibility = "visible";
-  document.getElementById("priority").style.visibility = "visible"
+  document.getElementById("priority").style.visibility = "visible";
+  document.getElementById("instructions").style.visibility = "visible";
   document.getElementById("result").style.visibility = "hidden";
   document.getElementById("result").innerHTML = "<strong>Referee calls:</strong> ";
   userCall = new Call();
@@ -185,6 +228,7 @@ function initial() {
  */
 function initialUpdate(event) {
   document.getElementById("result").style.visibility = "visible";
+  document.getElementById("instructions").style.visibility = "hidden";
   if (event.target.id === "attackleft") {
       updatePriority("left");
       attackResult("attack");
@@ -192,15 +236,15 @@ function initialUpdate(event) {
       updatePriority("right");
       attackResult("attack");
   } else if (event.target.id ===  "polleft") {
-      userCall.actions.push(new PointInLine("left"));
+      userCall.addAction(new PointInLine("left"));
       updatePriority("left");
       awardTouch();
   } else if (event.target.id === "polright") {
-      userCall.actions.push(new PointInLine("right"));
+      userCall.addAction(new PointInLine("right"));
       updatePriority("right");
       awardTouch();
   } else if (event.target.id === "simul") {
-      userCall.actions.push(new Simultaneous());
+      userCall.addAction(new Simultaneous());
       noTouch();
   } else {
       console.log("Error: check if statements in initialUpdate");
@@ -212,7 +256,7 @@ function initialUpdate(event) {
                                 "counterattack", "riposte"
  */
 function attackResult(attackType) {
-  userCall.actions.push(new Action(attackType, currentPriority()));
+  userCall.addAction(new Action(attackType, currentPriority()));
   updateResult();
   document.getElementById("userPrompt").innerHTML = "What was the result of the " + attackType + "?";
   let b = document.getElementById("attackButtons");
@@ -224,19 +268,19 @@ function attackResult(attackType) {
        "misses": attackType + " misses",
        "parried": attackType + " is parried"
      };
-  } else if (attackType === "counterattack") {
-     actions = {
-       "arrives": attackType + " arrives",
-       "offtarget": attackType + " off target",
-       "misses2nd": attackType + " misses",
-       "parried": attackType + " is parried",
-     };
-  } else {
+  } else if (attackType === "riposte") {
     actions = {
       "arrives": attackType + " arrives",
       "offtarget": attackType + " off target",
       "misses2nd": attackType + " misses",
       "counterparried": attackType + " is counterparried"
+    };
+  } else {
+    actions = {
+      "arrives": attackType + " arrives",
+      "offtarget": attackType + " off target",
+      "misses2nd": attackType + " misses",
+      "parried": attackType + " is parried",
     };
   }
   createButtons(actions, attackUpdate);
@@ -247,30 +291,30 @@ function attackResult(attackType) {
  */
 function attackUpdate(event) {
   // document.getElementById("result").style.visibility = "visible";
-  let currentAction = userCall.actions[userCall.actions.length - 1];
+  let currentAction = userCall.getLastAction();
   if (event.target.id === "arrives") {
-    currentAction.result = "arrives";
+    currentAction.setResult("arrives");
     awardTouch();
   } else if (event.target.id === "offtarget") {
-    currentAction.result = "is off target";
+    currentAction.setResult("is off target");
     noTouch();
   } else if (event.target.id === "misses") {
-    currentAction.result = "is no";
+    currentAction.setResult("is no");
     updateResult();
     switchPriority();
     defenderResponse();
   } else if (event.target.id === "misses2nd") {
-    currentAction.result = "is no";
+    currentAction.setResult("is no");
     updateResult();
     switchPriority();
     attackContinuation();
   } else if (event.target.id === "parried") {
-    currentAction.result = "is parried";
+    currentAction.setResult("is parried");
     updateResult();
     switchPriority();
     riposte();
   } else if (event.target.id === "counterparried") {
-    currentAction.result = "is counterparried";
+    currentAction.setResult("is counterparried");
     updateResult();
     switchPriority();
     riposte();
@@ -294,7 +338,7 @@ function riposteUpdate(event) {
     updateResult();
     attackResult("riposte");
   } else if (event.target.id === "n") {
-    userCall.actions.push(new NoRiposte(currentPriority()));
+    userCall.addAction(new NoRiposte(currentPriority()));
     updateResult();
     switchPriority();
     attackContinuation();
@@ -339,14 +383,19 @@ function continuationUpdate(event) {
     updateResult();
     attackResult("remise");
   } else if (event.target.id === "no") {
-    updatePriority("none");
-    noTouch();
+    let last = userCall.getLastAction();
+    if (!(last instanceof NoRiposte) && (userCall.getLastAction().getFencer() !== currentPriority())) {
+      switchPriority();
+      attackContinuation();
+    } else {
+      invalidInputError();
+    }
   }
 }
 
 /** Ends the current fencing phrase with a touch to the fencer with priority. */
 function awardTouch() {
-  userCall.result = currentPriority();
+  userCall.setResult(currentPriority());
   updateResult();
   showResult();
 }
@@ -364,7 +413,6 @@ function showResult() {
   document.getElementById("buttons").style.visibility = "hidden";
   document.getElementById("priority").style.visibility = "hidden";
   document.getElementById("result").style.visibility = "visible";
-  // console.log(userCall);
 }
 
  /**
@@ -442,4 +490,19 @@ function currentPriority() {
 /** Updates the result displayed in the "result" element. */
 function updateResult(action) {
   document.getElementById("result").innerHTML = "<strong>Referee calls:</strong> " + userCall.toString();
+}
+
+/** Displays an error in the place of a referee call.
+ * @param {string} err - the error message to be displayed
+ */
+function showError(err) {
+  document.getElementById("result").innerHTML = "<strong>Error:</strong> " + err;
+  showResult();
+}
+
+/** Error message for inputs that do not result in halt. */
+function invalidInputError() {
+  showError("It doesn't look like this is a valid <em>last</em> fencing phrase.<br>"
+            + "Please ensure that you are only inputting the actions in the "
+            +"<em>last</em> fencing phrase, i.e. starting with an attack or point-in-line.");
 }
